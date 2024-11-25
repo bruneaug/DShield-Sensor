@@ -4,6 +4,6 @@ This section is storing files that can be used on the DShield sensor to automate
 ````
 git clone https://github.com/bruneaug/DShield-Sensor.git
 mkdir scripts 
-mv DShield-Sensor/* ~/scripts
-chmod 754 scripts/*.sh
+DShield-Sensor/sensor_scripts/* ~/scripts/
+chmod 754 ~/scripts/*.sh
 ````
