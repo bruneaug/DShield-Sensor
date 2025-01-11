@@ -5,118 +5,435 @@
 # Beats is configured under Fleet, you can define most settings
 # from the Kibana UI. You can update this file to configure the settings that
 # are not supported by Fleet.
+# This configuration file is specific for the DShield sensor and must be copied
+# in the /etc/elastic-agent director after the elastic-agent has been connected
+# to the ELK server.
+# Restart the elastic-agent service.
+# sudo systemctl restart elastic-agent
 fleet:
   enabled: true
 
 inputs:
-  - id: docker/metrics-docker
-    type: docker/metrics
+  - id: logfile-system
+    type: logfile
     streams:
-      - id: docker/metrics-docker.container
+      - id: logfile-system.auth
         data_stream:
-          dataset: docker.container
+          dataset: system.auth
+          type: logs
+        ignore_older: 72h
+        paths:
+          - /var/log/auth.log*
+          - /var/log/secure*
+        exclude_files:
+          - \.gz$
+        multiline:
+          pattern: ^\s
+          match: after
+        tags:
+          - system-auth
+        processors:
+          - add_locale: null
+          - rename:
+              fields:
+                - from: message
+                  to: event.original
+              ignore_missing: true
+              fail_on_error: false
+          - syslog:
+              field: event.original
+              ignore_missing: true
+              ignore_failure: true
+      - id: logfile-system.syslog
+        data_stream:
+          dataset: system.syslog
+          type: logs
+        paths:
+          - /var/log/messages*
+          - /var/log/syslog*
+          - /var/log/system*
+        exclude_files:
+          - \.gz$
+        multiline:
+          pattern: ^\s
+          match: after
+        processors:
+          - add_locale: null
+        tags: null
+        ignore_older: 72h
+  - id: winlog-system
+    type: winlog
+    streams:
+      - id: winlog-system.application
+        name: Application
+        data_stream:
+          dataset: system.application
+          type: logs
+        condition: '${host.platform} == ''windows'''
+        ignore_older: 72h
+      - id: winlog-system.security
+        name: Security
+        data_stream:
+          dataset: system.security
+          type: logs
+        condition: '${host.platform} == ''windows'''
+        ignore_older: 72h
+      - id: winlog-system.system
+        name: System
+        data_stream:
+          dataset: system.system
+          type: logs
+        condition: '${host.platform} == ''windows'''
+        ignore_older: 72h
+  - id: system/metrics-system
+    type: system/metrics
+    streams:
+      - id: system/metrics-system.core
+        data_stream:
+          dataset: system.core
           type: metrics
         metricsets:
-          - container
-        hosts:
-          - 'unix:///var/run/docker.sock'
-        period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.cpu
+          - core
+        core.metrics:
+          - percentages
+      - id: system/metrics-system.cpu
         data_stream:
-          dataset: docker.cpu
+          dataset: system.cpu
           type: metrics
         metricsets:
           - cpu
-        hosts:
-          - 'unix:///var/run/docker.sock'
+        cpu.metrics:
+          - percentages
+          - normalized_percentages
         period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.diskio
+      - id: system/metrics-system.diskio
         data_stream:
-          dataset: docker.diskio
+          dataset: system.diskio
           type: metrics
         metricsets:
           - diskio
-        hosts:
-          - 'unix:///var/run/docker.sock'
+        diskio.include_devices: null
         period: 10s
-        labels.dedot: true
-        skip_major:
-          - 9
-          - 253
-      - id: docker/metrics-docker.event
+      - id: system/metrics-system.filesystem
         data_stream:
-          dataset: docker.event
+          dataset: system.filesystem
           type: metrics
         metricsets:
-          - event
-        hosts:
-          - 'unix:///var/run/docker.sock'
-        period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.healthcheck
+          - filesystem
+        period: 1m
+        processors:
+          - drop_event.when.regexp:
+              system.filesystem.mount_point: ^/(sys|cgroup|proc|dev|etc|host|lib|snap)($|/)
+      - id: system/metrics-system.fsstat
         data_stream:
-          dataset: docker.healthcheck
+          dataset: system.fsstat
           type: metrics
         metricsets:
-          - healthcheck
-        hosts:
-          - 'unix:///var/run/docker.sock'
-        period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.image
+          - fsstat
+        period: 1m
+        processors:
+          - drop_event.when.regexp:
+              system.fsstat.mount_point: ^/(sys|cgroup|proc|dev|etc|host|lib|snap)($|/)
+      - id: system/metrics-system.load
         data_stream:
-          dataset: docker.image
+          dataset: system.load
           type: metrics
         metricsets:
-          - image
-        hosts:
-          - 'unix:///var/run/docker.sock'
+          - load
+        condition: '${host.platform} != ''windows'''
         period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.info
+      - id: system/metrics-system.memory
         data_stream:
-          dataset: docker.info
-          type: metrics
-        metricsets:
-          - info
-        hosts:
-          - 'unix:///var/run/docker.sock'
-        period: 10s
-      - id: docker/metrics-docker.memory
-        data_stream:
-          dataset: docker.memory
+          dataset: system.memory
           type: metrics
         metricsets:
           - memory
-        hosts:
-          - 'unix:///var/run/docker.sock'
         period: 10s
-        labels.dedot: true
-      - id: docker/metrics-docker.network
+      - id: system/metrics-system.network
         data_stream:
-          dataset: docker.network
+          dataset: system.network
           type: metrics
         metricsets:
           - network
-        hosts:
-          - 'unix:///var/run/docker.sock'
         period: 10s
-        labels.dedot: true
-  - id: filestream-docker
-    type: filestream
-    streams:
-      - id: 'docker-container-logs-${docker.container.name}-${docker.container.id}'
+        network.interfaces: null
+      - id: system/metrics-system.process
         data_stream:
-          dataset: docker.container_logs
+          dataset: system.process
+          type: metrics
+        metricsets:
+          - process
+        period: 10s
+        process.include_top_n.by_cpu: 5
+        process.include_top_n.by_memory: 5
+        process.cmdline.cache.enabled: true
+        process.cgroups.enabled: false
+        process.include_cpu_ticks: false
+        processes:
+          - .*
+      - id: system/metrics-system.process.summary
+        data_stream:
+          dataset: system.process.summary
+          type: metrics
+        metricsets:
+          - process_summary
+        period: 10s
+      - id: system/metrics-system.socket_summary
+        data_stream:
+          dataset: system.socket_summary
+          type: metrics
+        metricsets:
+          - socket_summary
+        period: 10s
+      - id: system/metrics-system.uptime
+        data_stream:
+          dataset: system.uptime
+          type: metrics
+        metricsets:
+          - uptime
+        period: 10s
+  - id: httpjson-system
+    type: httpjson
+    streams:
+      - id: httpjson-system.application
+        data_stream:
+          dataset: system.application
           type: logs
-          elasticsearch:
-            dynamic_dataset: true
-            dynamic_namespace: true
-        paths:
-          - '/var/lib/docker/containers/${docker.container.id}/*-json.log'
-        parsers:
-          - container:
-              stream: all
-              format: docker
+        config_version: '2'
+        interval: 10s
+        cursor:
+          index_earliest:
+            value: '[[.last_event.result.max_indextime]]'
+        request.url: 'https://server.example.com:8089/services/search/jobs/export'
+        request.ssl: null
+        request.method: POST
+        request.transforms:
+          - set:
+              target: url.params.search
+              value: >-
+                search sourcetype="XmlWinEventLog:Application" | streamstats
+                max(_indextime) AS max_indextime
+          - set:
+              target: url.params.output_mode
+              value: json
+          - set:
+              target: url.params.index_earliest
+              value: '[[ .cursor.index_earliest ]]'
+              default: '[[(now (parseDuration "-10s")).Unix]]'
+          - set:
+              target: url.params.index_latest
+              value: '[[(now).Unix]]'
+          - set:
+              target: header.Content-Type
+              value: application/x-www-form-urlencoded
+        response.decode_as: application/x-ndjson
+        tags:
+          - forwarded
+        publisher_pipeline.disable_host: true
+        processors:
+          - decode_json_fields:
+              fields: message
+              target: json
+              add_error_key: true
+          - drop_event:
+              when:
+                not:
+                  has_fields:
+                    - json.result
+          - fingerprint:
+              fields:
+                - json.result._cd
+                - json.result._indextime
+                - json.result._raw
+                - json.result._time
+                - json.result.host
+                - json.result.source
+              target_field: '@metadata._id'
+          - drop_fields:
+              fields: message
+          - rename:
+              fields:
+                - from: json.result._raw
+                  to: event.original
+                - from: json.result.host
+                  to: host.name
+                - from: json.result.source
+                  to: event.provider
+              ignore_missing: true
+              fail_on_error: false
+          - drop_fields:
+              fields: json
+          - decode_xml_wineventlog:
+              field: event.original
+              target_field: winlog
+              ignore_missing: true
+              ignore_failure: true
+              map_ecs_fields: true
+          - timestamp:
+              field: winlog.time_created
+              layouts:
+                - '2006-01-02T15:04:05Z'
+                - '2006-01-02T15:04:05.999Z'
+                - '2006-01-02T15:04:05.999-07:00'
+              test:
+                - '2019-06-22T16:33:51Z'
+                - '2019-11-18T04:59:51.123Z'
+                - '2020-08-03T07:10:20.123456+02:00'
+      - id: httpjson-system.security
+        data_stream:
+          dataset: system.security
+          type: logs
+        config_version: '2'
+        interval: 10s
+        cursor:
+          index_earliest:
+            value: '[[.last_event.result.max_indextime]]'
+        request.url: 'https://server.example.com:8089/services/search/jobs/export'
+        request.ssl: null
+        request.method: POST
+        request.transforms:
+          - set:
+              target: url.params.search
+              value: >-
+                search sourcetype="XmlWinEventLog:Security" | streamstats
+                max(_indextime) AS max_indextime
+          - set:
+              target: url.params.output_mode
+              value: json
+          - set:
+              target: url.params.index_earliest
+              value: '[[ .cursor.index_earliest ]]'
+              default: '[[(now (parseDuration "-10s")).Unix]]'
+          - set:
+              target: url.params.index_latest
+              value: '[[(now).Unix]]'
+          - set:
+              target: header.Content-Type
+              value: application/x-www-form-urlencoded
+        response.decode_as: application/x-ndjson
+        tags:
+          - forwarded
+        publisher_pipeline.disable_host: true
+        processors:
+          - decode_json_fields:
+              fields: message
+              target: json
+              add_error_key: true
+          - drop_event:
+              when:
+                not:
+                  has_fields:
+                    - json.result
+          - fingerprint:
+              fields:
+                - json.result._cd
+                - json.result._indextime
+                - json.result._raw
+                - json.result._time
+                - json.result.host
+                - json.result.source
+              target_field: '@metadata._id'
+          - drop_fields:
+              fields: message
+          - rename:
+              fields:
+                - from: json.result._raw
+                  to: event.original
+                - from: json.result.host
+                  to: host.name
+                - from: json.result.source
+                  to: event.provider
+              ignore_missing: true
+              fail_on_error: false
+          - drop_fields:
+              fields: json
+          - decode_xml_wineventlog:
+              field: event.original
+              target_field: winlog
+              ignore_missing: true
+              ignore_failure: true
+              map_ecs_fields: true
+      - id: httpjson-system.system
+        data_stream:
+          dataset: system.system
+          type: logs
+        config_version: '2'
+        interval: 10s
+        cursor:
+          index_earliest:
+            value: '[[.last_event.result.max_indextime]]'
+        request.url: 'https://server.example.com:8089/services/search/jobs/export'
+        request.ssl: null
+        request.method: POST
+        request.transforms:
+          - set:
+              target: url.params.search
+              value: >-
+                search sourcetype="XmlWinEventLog:System" | streamstats
+                max(_indextime) AS max_indextime
+          - set:
+              target: url.params.output_mode
+              value: json
+          - set:
+              target: url.params.index_earliest
+              value: '[[ .cursor.index_earliest ]]'
+              default: '[[(now (parseDuration "-10s")).Unix]]'
+          - set:
+              target: url.params.index_latest
+              value: '[[(now).Unix]]'
+          - set:
+              target: header.Content-Type
+              value: application/x-www-form-urlencoded
+        response.decode_as: application/x-ndjson
+        tags:
+          - forwarded
+        publisher_pipeline.disable_host: true
+        processors:
+          - decode_json_fields:
+              fields: message
+              target: json
+              add_error_key: true
+          - drop_event:
+              when:
+                not:
+                  has_fields:
+                    - json.result
+          - fingerprint:
+              fields:
+                - json.result._cd
+                - json.result._indextime
+                - json.result._raw
+                - json.result._time
+                - json.result.host
+                - json.result.source
+              target_field: '@metadata._id'
+          - drop_fields:
+              fields: message
+          - rename:
+              fields:
+                - from: json.result._raw
+                  to: event.original
+                - from: json.result.host
+                  to: host.name
+                - from: json.result.source
+                  to: event.provider
+              ignore_missing: true
+              fail_on_error: false
+          - drop_fields:
+              fields: json
+          - decode_xml_wineventlog:
+              field: event.original
+              target_field: winlog
+              ignore_missing: true
+              ignore_failure: true
+              map_ecs_fields: true
+          - timestamp:
+              field: winlog.time_created
+              layouts:
+                - '2006-01-02T15:04:05Z'
+                - '2006-01-02T15:04:05.999Z'
+                - '2006-01-02T15:04:05.999-07:00'
+              test:
+                - '2019-06-22T16:33:51Z'
+                - '2019-11-18T04:59:51.123Z'
+                - '2020-08-03T07:10:20.123456+02:00'
