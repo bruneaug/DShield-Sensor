@@ -436,3 +436,29 @@ inputs:
                 - '2019-06-22T16:33:51Z'
                 - '2019-11-18T04:59:51.123Z'
                 - '2020-08-03T07:10:20.123456+02:00'
+# This section is for Netflow
+  - id: netflow-netflow
+    type: netflow
+    streams:
+      - id: netflow-netflow.log
+        data_stream:
+          dataset: netflow.log
+          type: logs
+        protocols:
+          - v1
+          - v5
+          - v6
+          - v7
+          - v8
+          - v9
+          - ipfix
+        host: 'localhost:2055'
+        max_message_size: 10KiB
+        workers: 1
+        expiration_timeout: 30m
+        queue_size: 8192
+        detect_sequence_reset: true
+        tags:
+          - netflow
+          - forwarded
+        publisher_pipeline.disable_host: true
