@@ -6,7 +6,7 @@
 # from the Kibana UI. You can update this file to configure the settings that
 # are not supported by Fleet.
 # This configuration file is specific for the DShield sensor and must be copied
-# in the /etc/elastic-agent director after the elastic-agent has been connected
+# in the /etc/elastic-agent directory after the elastic-agent has been connected
 # to the ELK server. Restart the elastic-agent service.
 # sudo systemctl restart elastic-agent
 fleet:
