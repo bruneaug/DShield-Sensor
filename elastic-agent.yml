@@ -7,9 +7,7 @@
 # are not supported by Fleet.
 # This configuration file is specific for the DShield sensor and must be copied
 # in the /etc/elastic-agent director after the elastic-agent has been connected
-# to the ELK server. This update will only work after adding System to the 
-# DShield elastic-agent.
-# Restart the elastic-agent service.
+# to the ELK server. Restart the elastic-agent service.
 # sudo systemctl restart elastic-agent
 fleet:
   enabled: true
