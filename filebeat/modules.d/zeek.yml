@@ -1,86 +1,126 @@
 # Module: zeek
-# Docs: https://www.elastic.co/guide/en/beats/filebeat/main/filebeat-module-zeek.html
+# Docs: https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-zeek.html
+# Copy this file to /etc/filebeat/modules.d
 
 - module: zeek
   capture_loss:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   connection:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   dce_rpc:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   dhcp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   dnp3:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   dns:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   dpd:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   files:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ftp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   http:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   intel:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   irc:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   kerberos:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   modbus:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   mysql:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   notice:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ntp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ntlm:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ocsp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   pe:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   radius:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   rdp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   rfb:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   signature:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   sip:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   smb_cmd:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   smb_files:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   smb_mapping:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   smtp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   snmp:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   socks:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ssh:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   ssl:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   stats:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   syslog:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   traceroute:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   tunnel:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   weird:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
   x509:
     enabled: true
+    var.paths: ["/opt/zeek/logs/current/*.log"]
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    var.paths: ["/opt/zeek/logs/current/*.log"]
+    # var.paths: 
