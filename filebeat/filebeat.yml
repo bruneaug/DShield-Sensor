@@ -23,6 +23,7 @@ filebeat.inputs:
 
 # Parsing webhoneypot logs for DShield
 - type: filestream
+  id: webhoneypot
 
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
