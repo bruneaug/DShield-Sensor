@@ -28,6 +28,7 @@ filebeat.inputs:
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /srv/db/webhoneypot*.json
+    - /srv/log/webhoneypot*.json
 
   # Change to true to enable this input configuration.
   enabled: true
