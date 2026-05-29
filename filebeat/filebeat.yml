@@ -64,7 +64,7 @@ filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - "/srv/ttylog/ttylog.log"
+    - "/srv/ttylog/ttylog.txt"
   fields_under_root: true
   fields:
     region: Ottawa
