@@ -60,6 +60,15 @@ filebeat.inputs:
   fields:
     region: Ottawa
 
+# TTY logs for dshield
+- type: log
+  enabled: true
+  paths:
+    - "/srv/ttylog/ttylog.log"
+  fields_under_root: true
+  fields:
+    region: Ottawa
+
 # Parsing ISC ThreatIntel
 - type: filestream
   id: iscintel
