@@ -61,15 +61,12 @@ filebeat.inputs:
     region: Ottawa
 
 # TTY logs for dshield
-- type: filestream
+- type: log
   id: ttylog
-  paths:
-    - "/srv/ttylog/ttylog.json"
   enabled: true
-  parsers:
-    - ndjson:
-      message_key: message
-      key_under_root: true
+  paths:
+    - "/srv/ttylog/ttylog.txt"
+  fields_under_root: true
 
 # Parsing ISC ThreatIntel
 - type: filestream
