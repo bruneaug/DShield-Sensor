@@ -38,9 +38,9 @@ rm -f $HOME/ttylog_data/*
 
 array=`cat /srv/cowrie/var/log/cowrie/cowrie.json.$YESTERDAY | jq -r | grep "Closing TTY Log" | sort | uniq | sed "s/.*message.*tty\/\(.*\) after.*/\1/g" | awk '{ print "python3 /srv/cowrie/bin/playlog -b /srv/cowrie/var/lib/cowrie/tty/"$1" | base64 -w 0 > $HOME/ttylog_data/"$1"" }'` 
 
-   echo "${array[@]}" > $HOME/scripts/daily_list.sh
-   chmod 755 $HOME/scripts/daily_list.sh
-   $HOME/scripts/daily_list.sh
+   echo "${array[@]}" > $HOME/daily_list.sh
+   chmod 755 $HOME/daily_list.sh
+   $HOME/daily_list.sh
 
 # Adding TTY log hash to the base64 content
 
